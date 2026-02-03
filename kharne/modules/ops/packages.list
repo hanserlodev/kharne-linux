@@ -1,0 +1,21 @@
+# Operations Module Packages
+
+# Containers
+docker
+docker-compose
+docker-buildx
+
+# Monitoring
+htop
+iotop
+nethogs
+
+# Network
+nmap
+tcpdump
+wireshark-cli
+iperf3
+
+# System
+lsof
+rsync

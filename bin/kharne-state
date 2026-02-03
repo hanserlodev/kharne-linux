@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# Kharne State Management
+# Create and manage system snapshots as states
+
+set -eEo pipefail
+
+export KHARNE_STATE="${KHARNE_STATE:-$HOME/.local/state/kharne}"
+
+show_states() {
+  echo "System States (Snapshots)"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo
+  
+  if command -v snapper &>/dev/null; then
+    snapper list | while IFS= read -r line; do
+      # Parse snapper output and rename for Kharne terminology
+      if [[ "$line" =~ ^[0-9]+ ]]; then
+        echo "$line" | sed 's/timeline/state-auto/g; s/single/state-user/g'
+      else
+        echo "$line"
+      fi
+    done
+  else
+    echo "Snapper not installed. No state tracking available."
+  fi
+}
+
+create_state() {
+  local description="${1:-user-checkpoint-$(date +%s)}"
+  
+  if ! command -v snapper &>/dev/null; then
+    echo "Error: Snapper not installed"
+    exit 1
+  fi
+  
+  echo "Creating system state: $description"
+  sudo snapper create --description "$description"
+  
+  # Record in Kharne state tracking
+  echo "$(date +%s) $description" >> "$KHARNE_STATE/checkpoints/history"
+  
+  echo "State created successfully"
+  echo "Stability not guaranteed. System assumes failure."
+}
+
+restore_state() {
+  local state_num="$1"
+  
+  if [[ -z "$state_num" ]]; then
+    echo "Usage: kharne-state restore <state-number>"
+    exit 1
+  fi
+  
+  echo "WARNING: This will restore system to state $state_num"
+  echo "Current state will be lost unless you create a checkpoint first."
+  read -p "Continue? (yes/no) " -r
+  
+  if [[ ! $REPLY =~ ^[Yy]es$ ]]; then
+    echo "Aborted."
+    exit 0
+  fi
+  
+  sudo snapper rollback "$state_num"
+  echo "System restored to state $state_num"
+  echo "Reboot required."
+}
+
+case "${1:-list}" in
+  list|show)
+    show_states
+    ;;
+  create|checkpoint)
+    create_state "${2:-}"
+    ;;
+  restore|rollback)
+    restore_state "${2:-}"
+    ;;
+  *)
+    echo "Usage: kharne-state <list|create|restore> [args]"
+    exit 1
+    ;;
+esac

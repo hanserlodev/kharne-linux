@@ -1,0 +1,139 @@
+#!/bin/bash
+
+# Kharne Module Management
+# Usage: kharne-module <list|enable|disable|info> [module-name]
+
+set -eEo pipefail
+
+export KHARNE_PATH="${KHARNE_PATH:-$HOME/.local/share/kharne}"
+export KHARNE_STATE="${KHARNE_STATE:-$HOME/.local/state/kharne}"
+
+MODULES_PATH="$KHARNE_PATH/modules"
+STATE_PATH="$KHARNE_STATE/modules"
+
+mkdir -p "$STATE_PATH"
+
+list_modules() {
+  echo "Available Modules"
+  echo "━━━━━━━━━━━━━━━━━"
+  echo
+  
+  for module_dir in "$MODULES_PATH"/*; do
+    if [[ -d "$module_dir" ]]; then
+      local module_name=$(basename "$module_dir")
+      local status="inactive"
+      
+      if [[ -f "$STATE_PATH/$module_name" ]]; then
+        status="active"
+      fi
+      
+      local symbol="○"
+      [[ "$status" == "active" ]] && symbol="●"
+      
+      echo "  $symbol $module_name [$status]"
+      
+      # Show description if exists
+      if [[ -f "$module_dir/description" ]]; then
+        echo "    $(cat "$module_dir/description")"
+      fi
+    fi
+  done
+}
+
+enable_module() {
+  local module="$1"
+  local module_path="$MODULES_PATH/$module"
+  
+  if [[ ! -d "$module_path" ]]; then
+    echo "Error: Module '$module' not found"
+    exit 1
+  fi
+  
+  if [[ -f "$STATE_PATH/$module" ]]; then
+    echo "Module '$module' already enabled"
+    exit 0
+  fi
+  
+  echo "Enabling module: $module"
+  
+  # Run module install script if exists
+  if [[ -f "$module_path/install.sh" ]]; then
+    echo "Running module installation..."
+    bash "$module_path/install.sh"
+  fi
+  
+  # Mark as enabled
+  touch "$STATE_PATH/$module"
+  echo "Module '$module' enabled successfully"
+  echo "Stability not guaranteed. System assumes failure."
+}
+
+disable_module() {
+  local module="$1"
+  
+  if [[ "$module" == "core" ]]; then
+    echo "Error: Cannot disable core module"
+    exit 1
+  fi
+  
+  if [[ ! -f "$STATE_PATH/$module" ]]; then
+    echo "Module '$module' is not enabled"
+    exit 0
+  fi
+  
+  echo "Disabling module: $module"
+  
+  # Run module uninstall script if exists
+  local module_path="$MODULES_PATH/$module"
+  if [[ -f "$module_path/uninstall.sh" ]]; then
+    echo "Running module removal..."
+    bash "$module_path/uninstall.sh"
+  fi
+  
+  rm "$STATE_PATH/$module"
+  echo "Module '$module' disabled"
+}
+
+show_info() {
+  local module="$1"
+  local module_path="$MODULES_PATH/$module"
+  
+  if [[ ! -d "$module_path" ]]; then
+    echo "Error: Module '$module' not found"
+    exit 1
+  fi
+  
+  echo "Module: $module"
+  echo "━━━━━━━━━━━━━━━━━"
+  echo
+  
+  if [[ -f "$module_path/description" ]]; then
+    echo "Description:"
+    cat "$module_path/description"
+    echo
+  fi
+  
+  if [[ -f "$module_path/packages.list" ]]; then
+    echo "Packages:"
+    cat "$module_path/packages.list"
+  fi
+}
+
+case "${1:-list}" in
+  list)
+    list_modules
+    ;;
+  enable)
+    enable_module "${2:-}"
+    ;;
+  disable)
+    disable_module "${2:-}"
+    ;;
+  info)
+    show_info "${2:-}"
+    ;;
+  *)
+    echo "Usage: kharne-module <list|enable|disable|info> [module-name]"
+    exit 1
+    ;;
+esac

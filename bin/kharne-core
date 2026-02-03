@@ -1,0 +1,104 @@
+#!/bin/bash
+
+# Kharne Core - Central system control interface
+# Usage: kharne-core <command>
+
+set -eEo pipefail
+
+export KHARNE_PATH="${KHARNE_PATH:-$HOME/.local/share/kharne}"
+export KHARNE_STATE="${KHARNE_STATE:-$HOME/.local/state/kharne}"
+export KHARNE_CONFIG="${KHARNE_CONFIG:-$HOME/.config/kharne}"
+
+VERSION="0.1.0-alpha"
+
+show_help() {
+  cat <<EOF
+Kharne Core Control v${VERSION}
+
+Usage: kharne-core <command>
+
+COMMANDS:
+  status          Show system state and active modules
+  modules         List available modules
+  module-enable   Enable a module
+  module-disable  Disable a module
+  state           Show system states (snapshots)
+  migrate         Run pending system migrations
+  verify          Verify system integrity
+  version         Show version information
+
+PHILOSOPHY:
+  Nothing is magic. Everything has layers.
+  Power with responsibility.
+
+EOF
+}
+
+show_status() {
+  echo "Kharne-Linux System Status"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo
+  echo "Version: $VERSION"
+  echo "Core Path: $KHARNE_PATH"
+  echo "State Path: $KHARNE_STATE"
+  echo
+  echo "Active Modules:"
+  
+  if [[ -d "$KHARNE_STATE/modules" ]]; then
+    for module in "$KHARNE_STATE/modules"/*; do
+      if [[ -f "$module" ]]; then
+        echo "  ✓ $(basename "$module")"
+      fi
+    done
+  else
+    echo "  (none initialized)"
+  fi
+  
+  echo
+  echo "System Constraints: $(verify_constraints && echo "met" || echo "degraded")"
+}
+
+verify_constraints() {
+  local failed=0
+  
+  # RAM check
+  local ram_mb=$(free -m | awk '/^Mem:/{print $2}')
+  if [[ $ram_mb -lt 8192 ]]; then
+    echo "⚠ RAM below recommended (${ram_mb}MB < 8192MB)"
+    ((failed++))
+  fi
+  
+  # Architecture check
+  if [[ "$(uname -m)" != "x86_64" ]]; then
+    echo "✗ Architecture not x86_64"
+    ((failed++))
+  fi
+  
+  # Wayland check
+  if [[ -z "${WAYLAND_DISPLAY}" ]] && [[ -z "${XDG_SESSION_TYPE}" || "${XDG_SESSION_TYPE}" != "wayland" ]]; then
+    echo "⚠ Not running under Wayland"
+  fi
+  
+  return $failed
+}
+
+case "${1:-}" in
+  status)
+    show_status
+    ;;
+  version)
+    echo "Kharne-Linux v${VERSION}"
+    echo "Based on: Omarchy 3.3.4"
+    ;;
+  verify)
+    verify_constraints
+    ;;
+  help|--help|-h)
+    show_help
+    ;;
+  *)
+    echo "Unknown command: ${1:-}"
+    echo "Run 'kharne-core help' for usage."
+    exit 1
+    ;;
+esac

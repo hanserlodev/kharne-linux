@@ -1,0 +1,32 @@
+# Development Module Packages
+# Systems programming focus
+
+# Compilers & Build Tools
+gcc
+clang
+llvm
+rust
+zig
+meson
+ninja
+
+# Python
+python
+python-pip
+python-virtualenv
+
+# Version Control
+lazygit
+
+# Debuggers & Profilers
+gdb
+lldb
+valgrind
+strace
+
+# Documentation
+man-db
+man-pages
+
+# Editor Support
+neovim

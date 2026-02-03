@@ -1,0 +1,45 @@
+# Kharne Core Color Palette
+# Industrial, functional, no decoration
+
+[colors]
+# Primary: Cold Blue
+primary = "#3a5f7d"
+primary_bright = "#5a8db8"
+primary_dim = "#2a4a5d"
+
+# Secondary: Dark Red
+secondary = "#7d3a3a"
+secondary_bright = "#b85a5a"
+secondary_dim = "#5d2a2a"
+
+# Base: Industrial Greys
+background = "#1a1a1a"
+background_alt = "#252525"
+foreground = "#c5c8c6"
+foreground_dim = "#8a8a8a"
+
+# Accents
+warning = "#d4a017"
+error = "#cc6666"
+success = "#5a7d5a"
+info = "#5a7d8d"
+
+# Terminal Colors (16 colors)
+[terminal]
+black = "#1a1a1a"
+red = "#cc6666"
+green = "#5a7d5a"
+yellow = "#d4a017"
+blue = "#3a5f7d"
+magenta = "#7d3a5a"
+cyan = "#5a7d8d"
+white = "#c5c8c6"
+
+black_bright = "#4a4a4a"
+red_bright = "#ff8888"
+green_bright = "#7daa7d"
+yellow_bright = "#f4c037"
+blue_bright = "#5a8db8"
+magenta_bright = "#b85a8d"
+cyan_bright = "#7dadb8"
+white_bright = "#ffffff"

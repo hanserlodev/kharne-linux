@@ -1,0 +1,53 @@
+# Kharne Core Packages
+# Minimal system nucleus - no redundancy
+
+# Display & Compositor
+hyprland
+hypridle
+hyprlock
+waybar
+swayosd
+
+# Terminal
+ghostty
+
+# Browser
+firefox
+
+# System Tools
+bash-completion
+brightnessctl
+btop
+fastfetch
+grim
+slurp
+wl-clipboard
+
+# File System
+btrfs-progs
+snapper
+
+# Boot & Display Manager
+limine
+sddm
+plymouth
+
+# Audio
+pipewire
+pipewire-pulse
+wireplumber
+
+# Network
+networkmanager
+avahi
+bluez
+bluez-utils
+
+# Security
+gnome-keyring
+libsecret
+
+# Development Essentials
+git
+base-devel
+cmake

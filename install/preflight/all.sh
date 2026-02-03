@@ -1,3 +1,4 @@
+source $OMARCHY_INSTALL/preflight/kharne-constraints.sh
 source $OMARCHY_INSTALL/preflight/guard.sh
 source $OMARCHY_INSTALL/preflight/begin.sh
 run_logged $OMARCHY_INSTALL/preflight/show-env.sh
